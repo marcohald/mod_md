@@ -877,9 +877,27 @@ ready:
     /* determine when it should be activated */
     t = apr_time_now();
     for (i = 0; i < ad->creds->nelts; ++i) {
+        apr_time_t t3;
+        md_cert_t *cert;
         cred = APR_ARRAY_IDX(ad->creds, i, md_credentials_t*);
-        t2 = md_cert_get_not_before(APR_ARRAY_IDX(cred->chain, 0, md_cert_t*));
+        cert = APR_ARRAY_IDX(cred->chain, 0, md_cert_t*);
+        t2 = md_cert_get_not_before(cert);
+        t3 = md_cert_get_not_after(cert);
         if (t2 > t) t = t2;
+
+        if (d->md->cert_duration) {
+            apr_time_t cert_len = t3 - t2;
+            apr_time_t req_len = d->md->cert_duration->len;
+            apr_time_t diff = cert_len - req_len;
+            if (diff < 0) diff = -diff;
+            if (diff > apr_time_from_sec(MD_SECS_PER_DAY)) {
+                md_log_perror(MD_LOG_MARK, MD_LOG_WARNING, 0, d->p,
+                              "%s: CA issued a certificate with duration %s when we requested %s",
+                              d->md->name,
+                              md_duration_format(d->p, cert_len),
+                              md_duration_format(d->p, req_len));
+            }
+        }
     }
     md_result_delay_set(result, t);
 

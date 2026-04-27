@@ -29,6 +29,8 @@ typedef enum {
     MD_CONFIG_BASE_DIR,
     MD_CONFIG_CA_AGREEMENT,
     MD_CONFIG_DRIVE_MODE,
+    MD_CONFIG_CERT_DURATION,
+    MD_CONFIG_CERT_NOTBEFORE,
     MD_CONFIG_RENEW_WINDOW,
     MD_CONFIG_WARN_WINDOW,
     MD_CONFIG_TRANSITIVE,
@@ -94,6 +96,8 @@ typedef struct md_srv_conf_t {
     int renew_mode;                    /* mode of obtaining credentials */
     int must_staple;                   /* certificates should set the OCSP Must Staple extension */
     struct md_pkeys_spec_t *pks;       /* specification for private keys */
+    md_timeslice_t *cert_duration;     /* time the certificate should be valid for */
+    md_timeslice_t *cert_notbefore;    /* time offset for notBefore */
     md_timeslice_t *renew_window;      /* time before expiration that starts renewal */
     md_timeslice_t *warn_window;       /* time before expiration that warning are sent out */
     

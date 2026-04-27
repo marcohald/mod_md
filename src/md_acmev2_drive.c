@@ -58,6 +58,8 @@ static apr_status_t ad_setup_order(md_proto_driver_t *d, md_result_t *result, in
     md_t *md = ad->md;
     const char *profile = NULL;
     const char *ari_cert_id = NULL;
+    const char *notBefore = NULL;
+    const char *notAfter = NULL;
 
     assert(ad->md);
     assert(ad->acme);
@@ -131,8 +133,25 @@ static apr_status_t ad_setup_order(md_proto_driver_t *d, md_result_t *result, in
         }
     }
 
+    if (md->cert_duration || md->cert_notbefore) {
+        apr_time_t nb = apr_time_now();
+        if (md->cert_notbefore) {
+            nb += md->cert_notbefore->len;
+            notBefore = md_time_format_rfc3339(nb, d->p);
+        }
+        else if (md->cert_duration) {
+            /* If cert_duration is configured but not cert_notbefore,
+             * we need to supply notBefore if we supply notAfter. */
+            notBefore = md_time_format_rfc3339(nb, d->p);
+        }
+
+        if (md->cert_duration) {
+            apr_time_t na = nb + md->cert_duration->len;
+            notAfter = md_time_format_rfc3339(na, d->p);
+        }
+    }
     rv = md_acme_order_register(&ad->order, ad->acme, d->p, d->md->name,
-                                ad->domains, profile, ari_cert_id);
+                                ad->domains, profile, ari_cert_id, notBefore, notAfter);
     if (APR_SUCCESS !=rv) goto leave;
     rv = md_acme_order_save(d->store, d->p, MD_SG_STAGING, d->md->name, ad->order, 0);
     if (APR_SUCCESS != rv) {

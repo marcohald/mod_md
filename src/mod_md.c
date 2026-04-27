@@ -340,6 +340,8 @@ static void merge_srv_config(md_t *md, md_srv_conf_t *base_sc, apr_pool_t *p)
     if (md->renew_mode == MD_RENEW_DEFAULT) {
         md->renew_mode = md_config_geti(md->sc, MD_CONFIG_DRIVE_MODE);
     }
+    if (!md->cert_duration) md_config_get_timespan(&md->cert_duration, md->sc, MD_CONFIG_CERT_DURATION);
+    if (!md->cert_notbefore) md_config_get_timespan(&md->cert_notbefore, md->sc, MD_CONFIG_CERT_NOTBEFORE);
     if (!md->renew_window) md_config_get_timespan(&md->renew_window, md->sc, MD_CONFIG_RENEW_WINDOW);
     if (!md->warn_window) md_config_get_timespan(&md->warn_window, md->sc, MD_CONFIG_WARN_WINDOW);
     if (md->transitive < 0) {
