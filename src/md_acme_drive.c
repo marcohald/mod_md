@@ -877,16 +877,16 @@ ready:
     /* determine when it should be activated */
     t = apr_time_now();
     for (i = 0; i < ad->creds->nelts; ++i) {
-        apr_time_t t3;
+        apr_time_t not_before, not_after;
         md_cert_t *cert;
         cred = APR_ARRAY_IDX(ad->creds, i, md_credentials_t*);
         cert = APR_ARRAY_IDX(cred->chain, 0, md_cert_t*);
-        t2 = md_cert_get_not_before(cert);
-        t3 = md_cert_get_not_after(cert);
-        if (t2 > t) t = t2;
+        not_before = md_cert_get_not_before(cert);
+        not_after = md_cert_get_not_after(cert);
+        if (not_before > t) t = not_before;
 
         if (d->md->cert_duration) {
-            apr_time_t cert_len = t3 - t2;
+            apr_time_t cert_len = not_after - not_before;
             apr_time_t req_len = d->md->cert_duration->len;
             apr_time_t diff = cert_len - req_len;
             if (diff < 0) diff = -diff;
