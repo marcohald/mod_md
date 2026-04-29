@@ -79,6 +79,8 @@ struct md_t {
     struct apr_array_header_t *contacts;   /* list of contact uris, e.g. mailto:xxx */
 
     struct md_pkeys_spec_t *pks;    /* specification for generating private keys */
+    md_timeslice_t *cert_duration;  /* time the certificate should be valid for */
+    md_timeslice_t *cert_notbefore; /* time offset for notBefore */
     md_timeslice_t *renew_window;   /* time before expiration that starts renewal */
     md_timeslice_t *warn_window;    /* time before expiration that warnings are sent out */
     
@@ -132,6 +134,8 @@ struct md_t {
 #define MD_KEY_CA_CERTS         "ca-certs"
 #define MD_KEY_CA_URL           "ca-url"
 #define MD_KEY_CERT             "cert"
+#define MD_KEY_CERT_DURATION    "cert-duration"
+#define MD_KEY_CERT_NOTBEFORE   "cert-notbefore"
 #define MD_KEY_CERT_FILES       "cert-files"
 #define MD_KEY_CERTIFICATE      "certificate"
 #define MD_KEY_CHALLENGE        "challenge"

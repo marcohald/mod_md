@@ -110,6 +110,8 @@ static md_srv_conf_t defconf = {
     MD_RENEW_AUTO,             /* renew mode */
     0,                         /* must staple */
     NULL,                      /* pkey spec */
+    NULL,                      /* cert_duration */
+    NULL,                      /* cert_notbefore */
     &def_renew_window,         /* renew window */
     &def_warn_window,          /* warn window */
     NULL,                      /* ca urls */
@@ -198,6 +200,8 @@ static void srv_conf_props_copy(md_srv_conf_t *to, const md_srv_conf_t *from)
     to->renew_mode = from->renew_mode;
     to->must_staple = from->must_staple;
     to->pks = from->pks;
+    to->cert_duration = from->cert_duration;
+    to->cert_notbefore = from->cert_notbefore;
     to->warn_window = from->warn_window;
     to->renew_window = from->renew_window;
     to->ca_urls = from->ca_urls;
@@ -225,6 +229,8 @@ static void srv_conf_props_apply(md_t *md, const md_srv_conf_t *from, apr_pool_t
     if (from->renew_mode != DEF_VAL) md->renew_mode = from->renew_mode;
     if (from->must_staple != DEF_VAL) md->must_staple = from->must_staple;
     if (from->pks) md->pks = md_pkeys_spec_clone(p, from->pks);
+    if (from->cert_duration) md->cert_duration = from->cert_duration;
+    if (from->cert_notbefore) md->cert_notbefore = from->cert_notbefore;
     if (from->renew_window) md->renew_window = from->renew_window;
     if (from->warn_window) md->warn_window = from->warn_window;
     if (from->ca_urls) md->ca_urls = apr_array_copy(p, from->ca_urls);
@@ -277,6 +283,8 @@ static void *md_config_merge(apr_pool_t *pool, void *basev, void *addv)
     nsc->renew_mode = (add->renew_mode != DEF_VAL)? add->renew_mode : base->renew_mode;
     nsc->must_staple = (add->must_staple != DEF_VAL)? add->must_staple : base->must_staple;
     nsc->pks = (!md_pkeys_spec_is_empty(add->pks))? add->pks : base->pks;
+    nsc->cert_duration = add->cert_duration? add->cert_duration : base->cert_duration;
+    nsc->cert_notbefore = add->cert_notbefore? add->cert_notbefore : base->cert_notbefore;
     nsc->renew_window = add->renew_window? add->renew_window : base->renew_window;
     nsc->warn_window = add->warn_window? add->warn_window : base->warn_window;
 
@@ -855,6 +863,35 @@ static const char *md_config_set_renew_window(cmd_parms *cmd, void *dc, const ch
     return NULL;
 }
 
+
+static const char *md_config_set_cert_notbefore(cmd_parms *cmd, void *dc, const char *value)
+{
+    md_srv_conf_t *config = md_config_get(cmd->server);
+    const char *err;
+
+    (void)dc;
+    if ((err = md_conf_check_location(cmd, MD_LOC_ALL))) {
+        return err;
+    }
+    err = md_timeslice_parse(&config->cert_notbefore, cmd->pool, value, MD_TIME_LIFE_NORM);
+    if (err) return apr_psprintf(cmd->pool, "MDCertificateNotBefore %s", err);
+    return NULL;
+}
+
+static const char *md_config_set_cert_duration(cmd_parms *cmd, void *dc, const char *value)
+{
+    md_srv_conf_t *config = md_config_get(cmd->server);
+    const char *err;
+
+    (void)dc;
+    if ((err = md_conf_check_location(cmd, MD_LOC_ALL))) {
+        return err;
+    }
+    err = md_timeslice_parse(&config->cert_duration, cmd->pool, value, MD_TIME_LIFE_NORM);
+    if (err) return apr_psprintf(cmd->pool, "MDCertificateDuration %s", err);
+    return NULL;
+}
+
 static const char *md_config_set_warn_window(cmd_parms *cmd, void *dc, const char *value)
 {
     md_srv_conf_t *config = md_config_get(cmd->server);
@@ -1362,6 +1399,10 @@ const command_rec md_cmds[] = {
                       "URL(s) or known name(s) of CA issuing the certificates"),
     AP_INIT_TAKE1("MDCertificateAgreement", md_config_set_agreement, NULL, RSRC_CONF, 
                   "either 'accepted' or the URL of CA Terms-of-Service agreement you accept"),
+    AP_INIT_TAKE1("MDCertificateDuration", md_config_set_cert_duration, NULL, RSRC_CONF,
+                  "Time the certificate should be valid for"),
+    AP_INIT_TAKE1("MDCertificateNotBefore", md_config_set_cert_notbefore, NULL, RSRC_CONF,
+                  "Time offset for the certificate notBefore field"),
     AP_INIT_TAKE_ARGV("MDCAChallenges", md_config_set_cha_tyes, NULL, RSRC_CONF, 
                       "A list of challenge types to be used."),
     AP_INIT_TAKE1("MDCertificateProtocol", md_config_set_ca_proto, NULL, RSRC_CONF, 
@@ -1559,6 +1600,12 @@ int md_config_geti(const md_srv_conf_t *sc, md_config_var_t var)
 void md_config_get_timespan(md_timeslice_t **pspan, const md_srv_conf_t *sc, md_config_var_t var)
 {
     switch (var) {
+        case MD_CONFIG_CERT_DURATION:
+            *pspan = sc->cert_duration? sc->cert_duration : defconf.cert_duration;
+            break;
+        case MD_CONFIG_CERT_NOTBEFORE:
+            *pspan = sc->cert_notbefore? sc->cert_notbefore : defconf.cert_notbefore;
+            break;
         case MD_CONFIG_RENEW_WINDOW:
             *pspan = sc->renew_window? sc->renew_window : defconf.renew_window;
             break;

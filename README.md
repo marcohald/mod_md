@@ -1730,6 +1730,8 @@ checks by mod_md in v1.1.x which are now eliminated. If you have many domains, t
 * [MDBaseServer](#mdbaseserver)
 * [MDCACertificateFile](#mdcacertificatefile)
 * [MDCAChallenges](#mdcachallenges)
+* [MDCertificateDuration](#mdcertificateduration)
+* [MDCertificateNotBefore](#mdcertificatenotbefore)
 * [MDCertificateAgreement](#mdcertificateagreement--terms-of-service)
 * [MDCertificateAuthority](#mdcertificateauthority)
 * [MDCertificateCheck](#mdcertificatecheck)
@@ -1827,6 +1829,24 @@ If you configure `MDCAChallenges` directly, this auto selection is disabled. Ins
 use the configured challenge list when talking to the ACME server (a challenge type must be offered
 by the server as well). This challenges are examined in the order specified.
  
+
+## MDCertificateDuration
+
+`MDCertificateDuration duration`<BR/>
+Default: not set
+
+Defines the lifetime of a certificate you request from the CA. The CA might support this or not. It might give you a certificate with a different duration or fail the request. The module will accept any valid certificate returned by the CA, but log a warning if the duration deviates significantly.
+The duration is specified similarly to `MDRenewWindow` (e.g., `10d` for 10 days).
+
+
+## MDCertificateNotBefore
+
+`MDCertificateNotBefore offset`<BR/>
+Default: not set
+
+Defines the offset from the current time to use for the `notBefore` field when requesting a certificate from the CA.
+It can be positive or negative (e.g., `-1d` for yesterday, `10d` for 10 days in the future). The CA might adjust or ignore this.
+
 
 ## MDCertificateAgreement / Terms of Service
 

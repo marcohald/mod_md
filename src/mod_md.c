@@ -340,6 +340,8 @@ static void merge_srv_config(md_t *md, md_srv_conf_t *base_sc, apr_pool_t *p)
     if (md->renew_mode == MD_RENEW_DEFAULT) {
         md->renew_mode = md_config_geti(md->sc, MD_CONFIG_DRIVE_MODE);
     }
+    if (!md->cert_duration) md_config_get_timespan(&md->cert_duration, md->sc, MD_CONFIG_CERT_DURATION);
+    if (!md->cert_notbefore) md_config_get_timespan(&md->cert_notbefore, md->sc, MD_CONFIG_CERT_NOTBEFORE);
     if (!md->renew_window) md_config_get_timespan(&md->renew_window, md->sc, MD_CONFIG_RENEW_WINDOW);
     if (!md->warn_window) md_config_get_timespan(&md->warn_window, md->sc, MD_CONFIG_WARN_WINDOW);
     if (md->transitive < 0) {
@@ -680,6 +682,16 @@ static apr_status_t merge_mds_with_conf(md_mod_conf_t *mc, apr_pool_t *p,
      * before the server starts processing.
      */
     base_conf = md_config_get(base_server);
+    md_config_get_timespan(&ts, base_conf, MD_CONFIG_CERT_DURATION);
+    if (ts) {
+        ap_log_error(APLOG_MARK, APLOG_TRACE1, 0, base_server,
+                     "md_init: default cert duration %s", md_timeslice_format(ts, p));
+    }
+    md_config_get_timespan(&ts, base_conf, MD_CONFIG_CERT_NOTBEFORE);
+    if (ts) {
+        ap_log_error(APLOG_MARK, APLOG_TRACE1, 0, base_server,
+                     "md_init: default cert notbefore %s", md_timeslice_format(ts, p));
+    }
     md_config_get_timespan(&ts, base_conf, MD_CONFIG_RENEW_WINDOW);
     if (ts) md_reg_set_renew_window_default(mc->reg, ts);
     md_config_get_timespan(&ts, base_conf, MD_CONFIG_WARN_WINDOW);

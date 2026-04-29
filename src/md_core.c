@@ -293,6 +293,10 @@ md_json_t *md_to_json(const md_t *md, apr_pool_t *p)
         if (md->state_descr)
             md_json_sets(md->state_descr, json, MD_KEY_STATE_DESCR, NULL);
         md_json_setl(md->renew_mode, json, MD_KEY_RENEW_MODE, NULL);
+        if (md->cert_duration)
+            md_json_sets(md_timeslice_format(md->cert_duration, p), json, MD_KEY_CERT_DURATION, NULL);
+        if (md->cert_notbefore)
+            md_json_sets(md_timeslice_format(md->cert_notbefore, p), json, MD_KEY_CERT_NOTBEFORE, NULL);
         if (md->renew_window)
             md_json_sets(md_timeslice_format(md->renew_window, p), json, MD_KEY_RENEW_WINDOW, NULL);
         if (md->warn_window)
@@ -363,8 +367,12 @@ md_t *md_from_json(md_json_t *json, apr_pool_t *p)
         md->renew_mode = (int)md_json_getl(json, MD_KEY_RENEW_MODE, NULL);
         md->domains = md_array_str_compact(p, md->domains, 0);
         md->transitive = (int)md_json_getl(json, MD_KEY_TRANSITIVE, NULL);
+        s = md_json_gets(json, MD_KEY_CERT_DURATION, NULL);
+        if (s) md_timeslice_parse(&md->cert_duration, p, s, MD_TIME_LIFE_NORM);
+        s = md_json_gets(json, MD_KEY_CERT_NOTBEFORE, NULL);
+        if (s) md_timeslice_parse(&md->cert_notbefore, p, s, MD_TIME_LIFE_NORM);
         s = md_json_gets(json, MD_KEY_RENEW_WINDOW, NULL);
-        md_timeslice_parse(&md->renew_window, p, s, MD_TIME_LIFE_NORM);
+        if (s) md_timeslice_parse(&md->renew_window, p, s, MD_TIME_LIFE_NORM);
         s = md_json_gets(json, MD_KEY_WARN_WINDOW, NULL);
         md_timeslice_parse(&md->warn_window, p, s, MD_TIME_LIFE_NORM);
         if (md_json_has_key(json, MD_KEY_CA, MD_KEY_CHALLENGES, NULL)) {

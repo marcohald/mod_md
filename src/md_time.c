@@ -64,8 +64,17 @@ char *md_timeperiod_print(apr_pool_t *p, const md_timeperiod_t *period)
 static const char *duration_print(apr_pool_t *p, int roughly, apr_interval_time_t duration)
 {
     const char *s = "", *sep = "";
-    long days = (long)(apr_time_sec(duration) / MD_SECS_PER_DAY);
-    int rem = (int)(apr_time_sec(duration) % MD_SECS_PER_DAY);
+    int sign = 1;
+    long days;
+    int rem;
+
+    if (duration < 0) {
+        sign = -1;
+        duration = -duration;
+    }
+
+    days = (long)(apr_time_sec(duration) / MD_SECS_PER_DAY);
+    rem = (int)(apr_time_sec(duration) % MD_SECS_PER_DAY);
     
     s = roughly? "~" : "";
     if (days > 0) {
@@ -102,6 +111,9 @@ static const char *duration_print(apr_pool_t *p, int roughly, apr_interval_time_
             s = apr_psprintf(p, "%d ms", (int)apr_time_msec(duration));
         }
     }
+    if (sign < 0 && duration != 0) {
+        s = apr_pstrcat(p, "-", s, NULL);
+    }
     return s;
 }
 
@@ -118,8 +130,17 @@ const char *md_duration_roughly(apr_pool_t *p, apr_interval_time_t duration)
 static const char *duration_format(apr_pool_t *p, apr_interval_time_t duration)
 {
     const char *s = "0";
-    int units = (int)(apr_time_sec(duration) / MD_SECS_PER_DAY);
-    int rem = (int)(apr_time_sec(duration) % MD_SECS_PER_DAY);
+    int sign = 1;
+    int units;
+    int rem;
+
+    if (duration < 0) {
+        sign = -1;
+        duration = -duration;
+    }
+
+    units = (int)(apr_time_sec(duration) / MD_SECS_PER_DAY);
+    rem = (int)(apr_time_sec(duration) % MD_SECS_PER_DAY);
     
     if (rem == 0) {
         s = apr_psprintf(p, "%dd", units); 
@@ -147,6 +168,9 @@ static const char *duration_format(apr_pool_t *p, apr_interval_time_t duration)
                 }
             }
         }
+    }
+    if (sign < 0 && duration != 0) {
+        s = apr_pstrcat(p, "-", s, NULL);
     }
     return s;
 }
@@ -322,6 +346,20 @@ md_timeperiod_t md_timeperiod_common(const md_timeperiod_t *a, const md_timeperi
         c.start = c.end = 0;
     }
     return c;
+}
+
+const char *md_time_format_rfc3339(apr_time_t t, apr_pool_t *p)
+{
+    apr_time_exp_t texp;
+    apr_size_t retlen;
+    char *buf;
+
+    if (APR_SUCCESS != apr_time_exp_gmt(&texp, t)) {
+        return NULL;
+    }
+    buf = apr_palloc(p, 30);
+    apr_strftime(buf, &retlen, 30, "%Y-%m-%dT%H:%M:%SZ", &texp);
+    return buf;
 }
 
 apr_time_t md_time_parse_rfc3339(const char *s)
