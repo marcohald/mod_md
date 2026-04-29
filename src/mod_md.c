@@ -682,6 +682,16 @@ static apr_status_t merge_mds_with_conf(md_mod_conf_t *mc, apr_pool_t *p,
      * before the server starts processing.
      */
     base_conf = md_config_get(base_server);
+    md_config_get_timespan(&ts, base_conf, MD_CONFIG_CERT_DURATION);
+    if (ts) {
+        ap_log_error(APLOG_MARK, APLOG_TRACE1, 0, base_server,
+                     "md_init: default cert duration %s", md_timeslice_format(ts, p));
+    }
+    md_config_get_timespan(&ts, base_conf, MD_CONFIG_CERT_NOTBEFORE);
+    if (ts) {
+        ap_log_error(APLOG_MARK, APLOG_TRACE1, 0, base_server,
+                     "md_init: default cert notbefore %s", md_timeslice_format(ts, p));
+    }
     md_config_get_timespan(&ts, base_conf, MD_CONFIG_RENEW_WINDOW);
     if (ts) md_reg_set_renew_window_default(mc->reg, ts);
     md_config_get_timespan(&ts, base_conf, MD_CONFIG_WARN_WINDOW);

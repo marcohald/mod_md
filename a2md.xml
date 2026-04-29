@@ -237,6 +237,8 @@
         <arg choice="plain">account</arg>
         <arg choice="plain">contacts</arg>
         <arg choice="plain">agreement</arg>
+        <arg choice="plain">duration</arg>
+        <arg choice="plain">notbefore</arg>
       </group>
     </cmdsynopsis>
 
@@ -294,6 +296,24 @@
           <arg choice="plain"><replaceable>URI</replaceable></arg>
       </cmdsynopsis>
       <para>URI pointing to terms of service of ACME server.</para>
+    </refsect3>
+
+    <refsect3>
+      <title>duration</title>
+      <cmdsynopsis>
+          <command>duration</command>
+          <arg choice="plain"><replaceable>timeslice</replaceable></arg>
+      </cmdsynopsis>
+      <para>Duration the certificate should be requested to be valid for.</para>
+    </refsect3>
+
+    <refsect3>
+      <title>notbefore</title>
+      <cmdsynopsis>
+          <command>notbefore</command>
+          <arg choice="plain"><replaceable>timeslice</replaceable></arg>
+      </cmdsynopsis>
+      <para>Time offset for the certificate notBefore field.</para>
     </refsect3>
   </refsect2>
 

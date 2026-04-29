@@ -366,11 +366,11 @@ md_t *md_from_json(md_json_t *json, apr_pool_t *p)
         md->domains = md_array_str_compact(p, md->domains, 0);
         md->transitive = (int)md_json_getl(json, MD_KEY_TRANSITIVE, NULL);
         s = md_json_gets(json, MD_KEY_CERT_DURATION, NULL);
-        md_timeslice_parse(&md->cert_duration, p, s, MD_TIME_LIFE_NORM);
+        if (s) md_timeslice_parse(&md->cert_duration, p, s, MD_TIME_LIFE_NORM);
         s = md_json_gets(json, MD_KEY_CERT_NOTBEFORE, NULL);
-        md_timeslice_parse(&md->cert_notbefore, p, s, MD_TIME_LIFE_NORM);
+        if (s) md_timeslice_parse(&md->cert_notbefore, p, s, MD_TIME_LIFE_NORM);
         s = md_json_gets(json, MD_KEY_RENEW_WINDOW, NULL);
-        md_timeslice_parse(&md->renew_window, p, s, MD_TIME_LIFE_NORM);
+        if (s) md_timeslice_parse(&md->renew_window, p, s, MD_TIME_LIFE_NORM);
         s = md_json_gets(json, MD_KEY_WARN_WINDOW, NULL);
         md_timeslice_parse(&md->warn_window, p, s, MD_TIME_LIFE_NORM);
         if (md_json_has_key(json, MD_KEY_CA, MD_KEY_CHALLENGES, NULL)) {
