@@ -654,7 +654,7 @@ static apr_status_t acme_renew(md_proto_driver_t *d, md_result_t *result)
     md_acme_driver_t *ad = d->baton;
     int reset_staging = d->reset;
     apr_status_t rv = APR_SUCCESS;
-    apr_time_t now, t, t2;
+    apr_time_t now, t;
     md_credentials_t *cred;
     const char *ca_effective = NULL;
     char ts[APR_RFC822_DATE_LEN];
